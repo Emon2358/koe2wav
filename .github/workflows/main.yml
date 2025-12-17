@@ -1,0 +1,40 @@
+name: Build for Windows 95
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-legacy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install MinGW-w64 (32-bit)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mingw-w64
+
+    - name: Compile for Windows 95 (x86 static)
+      run: |
+        # i686-w64-mingw32-gcc : 32bit向けコンパイラ
+        # -static : 必要なライブラリをexeに埋め込む（Win95にDLLがないため必須）
+        # -O2     : 最適化
+        # -s      : デバッグ情報を削除してサイズ削減
+        
+        i686-w64-mingw32-gcc koe_extract.c -o koe_extract.exe -static -O2 -s
+
+    - name: Verify build
+      run: |
+        ls -l koe_extract.exe
+        file koe_extract.exe
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: koe_extract_win95
+        path: koe_extract.exe
